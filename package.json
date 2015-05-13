@@ -27,6 +27,6 @@
     "moment": "^2.10.3",
     "moment-timezone": "^0.3.1",
     "odoql-utils": "1.0.0",
-    "timespanner": "^1.0.0"
+    "timespanner": "2.*"
   }
 }
