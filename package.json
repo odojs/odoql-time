@@ -1,0 +1,32 @@
+{
+  "name": "odoql-timespanner",
+  "version": "0.0.1",
+  "description": "Timespanner integration for OdoQL",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/odojs/odoql-timespanner.git"
+  },
+  "keywords": [
+    "odoql",
+    "time",
+    "momentjs",
+    "timezones",
+    "timespanner"
+  ],
+  "author": "MetOcean Solutions Ltd",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/odojs/odoql-timespanner/issues"
+  },
+  "homepage": "https://github.com/odojs/odoql-timespanner",
+  "dependencies": {
+    "moment": "^2.10.3",
+    "moment-timezone": "^0.3.1",
+    "odoql-utils": "1.0.0",
+    "timespanner": "^1.0.0"
+  }
+}

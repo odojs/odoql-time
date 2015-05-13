@@ -1,2 +1,2 @@
-# odoql-timespanner
+# OdoQL Timespanner
 Timespanner integration for OdoQL
