@@ -7,9 +7,21 @@ helpers = require('odoql-utils/helpers');
 
 module.exports = {
   unary: {
-    time: function(exe, params) {
+    asTime: function(exe, params) {
       return helpers.unary(exe, params, function(source) {
         return moment.spanner(source);
+      });
+    }
+  },
+  params: {
+    formatTime: function(exe, params) {
+      return helpers.params(exe, params, function(params, source) {
+        return source.format(params);
+      });
+    },
+    deltaTime: function(exe, params) {
+      return helpers.params(exe, params, function(params, source) {
+        return source.spanner(params);
       });
     }
   }
