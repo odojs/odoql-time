@@ -1,5 +1,5 @@
 moment = require 'timespanner'
-helpers = require 'odoql-utils/helpers'
+helpers = require 'odoql-exe/helpers'
 
 module.exports =
   unary:
