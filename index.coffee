@@ -7,6 +7,9 @@ module.exports =
       helpers.unary exe, params, (source) ->
         moment.spanner source
   params:
+    parseTime: (exe, params) ->
+      helpers.params exe, params, (params, source) ->
+        moment source, params
     formatTime: (exe, params) ->
       helpers.params exe, params, (params, source) ->
         source.format params
