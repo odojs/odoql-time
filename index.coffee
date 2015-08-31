@@ -21,7 +21,8 @@ module.exports =
     time_nudge: (exe, params) ->
       getlookback = exe.build params.__p.lookback
       getrange = exe.build params.__p.range
-      getvalues = exe.build params.__p.values
+      getkey = exe.build params.__p.key
+      gettarget = exe.build params.__p.target
       getdata = exe.build params.__p.data
       getsource = exe.build params.__s
       (cb) ->
@@ -29,44 +30,41 @@ module.exports =
           return cb err if err?
           getrange (err, range) ->
             return cb err if err?
-            getvalues (err, values) ->
+            getkey (err, key) ->
               return cb err if err?
-              getdata (err, data) ->
+              gettarget (err, target) ->
                 return cb err if err?
-                getsource (err, source) ->
+                getdata (err, data) ->
                   return cb err if err?
-                  return cb null, source if data.length is 0
-                  lastobstime = data[0].time
-                  for d in data
-                    lastobstime = d.time if lastobstime.isBefore d.time
-                  fcpoint = null
-                  for d in source
-                    if d.time.isSame(lastobstime) or d.time.isAfter(lastobstime)
-                      fcpoint = d
-                      break
-                  return cb null, source if !fcpoint?
-                  lookbackuntil = lastobstime.clone().spanner lookback
-                  obs = data.filter (d) ->
-                    return yes if d.time.isSame lastobstime
-                    d.time.isBefore(lastobstime) and d.time.isAfter(lookbackuntil)
-                  return cb null, source if obs.length is 0
-                  averages = {}
-                  for v in values
-                    averages[v] = 0
+                  getsource (err, source) ->
+                    return cb err if err?
+                    return cb null, source if data.length is 0
+                    lastobstime = data[0].time
+                    for d in data
+                      lastobstime = d.time if lastobstime.isBefore d.time
+                    fcpoint = null
+                    for d in source
+                      if d.time.isSame(lastobstime) or d.time.isAfter(lastobstime)
+                        fcpoint = d
+                        break
+                    return cb null, source if !fcpoint?
+                    lookbackuntil = lastobstime.clone().spanner lookback
+                    obs = data.filter (d) ->
+                      return yes if d.time.isSame lastobstime
+                      d.time.isBefore(lastobstime) and d.time.isAfter(lookbackuntil)
+                    return cb null, source if obs.length is 0
+                    average = 0
                     for d in obs
-                      averages[v] += d.value
-                    averages[v] /= obs.length
-                  rangeuntil = lastobstime.clone().spanner range
-                  rangems = rangeuntil.diff lastobstime
-                  deltas = {}
-                  for v in values
-                    deltas[v] = averages[v] - fcpoint[v]
-                  for d in source
-                    if d.time.isSame(lastobstime) or (d.time.isBefore(rangeuntil) and d.time.isAfter(lastobstime))
-                      x = d.time.diff lastobstime
-                      for v in values
-                        d[v] += deltas[v] * decaycurve x / rangems
-                  cb null, source
+                      average += d[key]
+                    average /= obs.length
+                    rangeuntil = lastobstime.clone().spanner range
+                    rangems = rangeuntil.diff lastobstime
+                    delta = average - fcpoint[key]
+                    for d in source
+                      if d.time.isSame(lastobstime) or (d.time.isBefore(rangeuntil) and d.time.isAfter(lastobstime))
+                        x = d.time.diff lastobstime
+                        d[target] = delta * decaycurve x / rangems
+                    cb null, source
     time_fill: (exe, params) ->
       helpers.params exe, params, (params, source) ->
         return params if source.length is 0

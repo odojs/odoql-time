@@ -34,10 +34,11 @@ module.exports = {
       });
     },
     time_nudge: function(exe, params) {
-      var getdata, getlookback, getrange, getsource, getvalues;
+      var getdata, getkey, getlookback, getrange, getsource, gettarget;
       getlookback = exe.build(params.__p.lookback);
       getrange = exe.build(params.__p.range);
-      getvalues = exe.build(params.__p.values);
+      getkey = exe.build(params.__p.key);
+      gettarget = exe.build(params.__p.target);
       getdata = exe.build(params.__p.data);
       getsource = exe.build(params.__s);
       return function(cb) {
@@ -49,78 +50,72 @@ module.exports = {
             if (err != null) {
               return cb(err);
             }
-            return getvalues(function(err, values) {
+            return getkey(function(err, key) {
               if (err != null) {
                 return cb(err);
               }
-              return getdata(function(err, data) {
+              return gettarget(function(err, target) {
                 if (err != null) {
                   return cb(err);
                 }
-                return getsource(function(err, source) {
-                  var averages, d, deltas, fcpoint, i, j, k, l, lastobstime, len, len1, len2, len3, len4, len5, len6, lookbackuntil, m, n, o, obs, rangems, rangeuntil, v, x;
+                return getdata(function(err, data) {
                   if (err != null) {
                     return cb(err);
                   }
-                  if (data.length === 0) {
-                    return cb(null, source);
-                  }
-                  lastobstime = data[0].time;
-                  for (i = 0, len = data.length; i < len; i++) {
-                    d = data[i];
-                    if (lastobstime.isBefore(d.time)) {
-                      lastobstime = d.time;
+                  return getsource(function(err, source) {
+                    var average, d, delta, fcpoint, i, j, k, l, lastobstime, len, len1, len2, len3, lookbackuntil, obs, rangems, rangeuntil, x;
+                    if (err != null) {
+                      return cb(err);
                     }
-                  }
-                  fcpoint = null;
-                  for (j = 0, len1 = source.length; j < len1; j++) {
-                    d = source[j];
-                    if (d.time.isSame(lastobstime) || d.time.isAfter(lastobstime)) {
-                      fcpoint = d;
-                      break;
+                    if (data.length === 0) {
+                      return cb(null, source);
                     }
-                  }
-                  if (fcpoint == null) {
-                    return cb(null, source);
-                  }
-                  lookbackuntil = lastobstime.clone().spanner(lookback);
-                  obs = data.filter(function(d) {
-                    if (d.time.isSame(lastobstime)) {
-                      return true;
-                    }
-                    return d.time.isBefore(lastobstime) && d.time.isAfter(lookbackuntil);
-                  });
-                  if (obs.length === 0) {
-                    return cb(null, source);
-                  }
-                  averages = {};
-                  for (k = 0, len2 = values.length; k < len2; k++) {
-                    v = values[k];
-                    averages[v] = 0;
-                    for (l = 0, len3 = obs.length; l < len3; l++) {
-                      d = obs[l];
-                      averages[v] += d.value;
-                    }
-                    averages[v] /= obs.length;
-                  }
-                  rangeuntil = lastobstime.clone().spanner(range);
-                  rangems = rangeuntil.diff(lastobstime);
-                  deltas = {};
-                  for (m = 0, len4 = values.length; m < len4; m++) {
-                    v = values[m];
-                    deltas[v] = averages[v] - fcpoint[v];
-                  }
-                  for (n = 0, len5 = source.length; n < len5; n++) {
-                    d = source[n];
-                    if (d.time.isSame(lastobstime) || (d.time.isBefore(rangeuntil) && d.time.isAfter(lastobstime))) {
-                      x = d.time.diff(lastobstime);
-                      for (o = 0, len6 = values.length; o < len6; o++) {
-                        v = values[o];
-                        d[v] += deltas[v] * decaycurve(x / rangems);
+                    lastobstime = data[0].time;
+                    for (i = 0, len = data.length; i < len; i++) {
+                      d = data[i];
+                      if (lastobstime.isBefore(d.time)) {
+                        lastobstime = d.time;
                       }
                     }
-                  }
-                  return cb(null, source);
+                    fcpoint = null;
+                    for (j = 0, len1 = source.length; j < len1; j++) {
+                      d = source[j];
+                      if (d.time.isSame(lastobstime) || d.time.isAfter(lastobstime)) {
+                        fcpoint = d;
+                        break;
+                      }
+                    }
+                    if (fcpoint == null) {
+                      return cb(null, source);
+                    }
+                    lookbackuntil = lastobstime.clone().spanner(lookback);
+                    obs = data.filter(function(d) {
+                      if (d.time.isSame(lastobstime)) {
+                        return true;
+                      }
+                      return d.time.isBefore(lastobstime) && d.time.isAfter(lookbackuntil);
+                    });
+                    if (obs.length === 0) {
+                      return cb(null, source);
+                    }
+                    average = 0;
+                    for (k = 0, len2 = obs.length; k < len2; k++) {
+                      d = obs[k];
+                      average += d[key];
+                    }
+                    average /= obs.length;
+                    rangeuntil = lastobstime.clone().spanner(range);
+                    rangems = rangeuntil.diff(lastobstime);
+                    delta = average - fcpoint[key];
+                    for (l = 0, len3 = source.length; l < len3; l++) {
+                      d = source[l];
+                      if (d.time.isSame(lastobstime) || (d.time.isBefore(rangeuntil) && d.time.isAfter(lastobstime))) {
+                        x = d.time.diff(lastobstime);
+                        d[target] = delta * decaycurve(x / rangems);
+                      }
+                    }
+                    return cb(null, source);
+                  });
                 });
               });
             });
