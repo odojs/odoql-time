@@ -48,6 +48,7 @@ module.exports =
                         fcpoint = d
                         break
                     return cb null, source if !fcpoint?
+                    return cb null, source if fcpoint[key] == 0
                     lookbackuntil = lastobstime.clone().spanner lookback
                     obs = data.filter (d) ->
                       return yes if d.time.isSame lastobstime
@@ -60,7 +61,10 @@ module.exports =
                     rangeuntil = lastobstime.clone().spanner range
                     rangems = rangeuntil.diff lastobstime
                     delta = average - fcpoint[key]
+                    return cb null, source if delta == 0
+                    delta /= fcpoint[key]
                     for d in source
+                      d[target] = 0
                       if d.time.isSame(lastobstime) or (d.time.isBefore(rangeuntil) and d.time.isAfter(lastobstime))
                         x = d.time.diff lastobstime
                         d[target] = delta * decaycurve x / rangems

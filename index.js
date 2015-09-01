@@ -88,6 +88,9 @@ module.exports = {
                     if (fcpoint == null) {
                       return cb(null, source);
                     }
+                    if (fcpoint[key] === 0) {
+                      return cb(null, source);
+                    }
                     lookbackuntil = lastobstime.clone().spanner(lookback);
                     obs = data.filter(function(d) {
                       if (d.time.isSame(lastobstime)) {
@@ -107,8 +110,13 @@ module.exports = {
                     rangeuntil = lastobstime.clone().spanner(range);
                     rangems = rangeuntil.diff(lastobstime);
                     delta = average - fcpoint[key];
+                    if (delta === 0) {
+                      return cb(null, source);
+                    }
+                    delta /= fcpoint[key];
                     for (l = 0, len3 = source.length; l < len3; l++) {
                       d = source[l];
+                      d[target] = 0;
                       if (d.time.isSame(lastobstime) || (d.time.isBefore(rangeuntil) && d.time.isAfter(lastobstime))) {
                         x = d.time.diff(lastobstime);
                         d[target] = delta * decaycurve(x / rangems);
