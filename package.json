@@ -1,6 +1,6 @@
 {
   "name": "odoql-time",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Timespanner integration for OdoQL",
   "main": "index.js",
   "scripts": {
