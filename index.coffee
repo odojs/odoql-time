@@ -12,6 +12,9 @@ module.exports =
     time: (exe, params) ->
       helpers.params exe, params, (params, source) ->
         moment source, params
+    time_utc: (exe, params) ->
+      helpers.params exe, params, (params, source) ->
+        moment.utc source, params
     time_format: (exe, params) ->
       helpers.params exe, params, (params, source) ->
         source.format params
@@ -65,7 +68,9 @@ module.exports =
                     delta /= fcpoint[key]
                     for d in source
                       d[target] = 0
-                      if d.time.isSame(lastobstime) or (d.time.isBefore(rangeuntil) and d.time.isAfter(lastobstime))
+                      if d.time.isBefore(lastobstime)
+                        d[target] = delta
+                      else if d.time.isSame(lastobstime) or (d.time.isBefore(rangeuntil) and d.time.isAfter(lastobstime))
                         x = d.time.diff lastobstime
                         d[target] = delta * decaycurve x / rangems
                     cb null, source

@@ -23,6 +23,11 @@ module.exports = {
         return moment(source, params);
       });
     },
+    time_utc: function(exe, params) {
+      return helpers.params(exe, params, function(params, source) {
+        return moment.utc(source, params);
+      });
+    },
     time_format: function(exe, params) {
       return helpers.params(exe, params, function(params, source) {
         return source.format(params);
@@ -117,7 +122,9 @@ module.exports = {
                     for (l = 0, len3 = source.length; l < len3; l++) {
                       d = source[l];
                       d[target] = 0;
-                      if (d.time.isSame(lastobstime) || (d.time.isBefore(rangeuntil) && d.time.isAfter(lastobstime))) {
+                      if (d.time.isBefore(lastobstime)) {
+                        d[target] = delta;
+                      } else if (d.time.isSame(lastobstime) || (d.time.isBefore(rangeuntil) && d.time.isAfter(lastobstime))) {
                         x = d.time.diff(lastobstime);
                         d[target] = delta * decaycurve(x / rangems);
                       }
