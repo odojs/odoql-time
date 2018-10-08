@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/odojs/odoql-time",
   "dependencies": {
-    "moment": "2.10.6",
+    "moment": "^2.22.2",
     "moment-timezone": "0.4.0",
     "odoql-exe": "1.5.0",
     "timespanner": "2.2.0"
